@@ -47,6 +47,7 @@
     html {
       scroll-behavior: smooth;
       font-size: 16px;
+      overflow-x: hidden; /* iOS Safari needs it here too */
     }
 
     body {
@@ -55,6 +56,8 @@
       color: var(--text-dark);
       overflow-x: hidden;
       line-height: 1.7;
+      position: relative; /* needed for overflow-x to clip children on iOS */
+      width: 100%;
     }
 
     img {
@@ -129,24 +132,24 @@
 
     .reveal-left {
       opacity: 0;
-      transform: translateX(-60px);
+      transform: translateY(40px); /* was translateX(-60px) — caused horizontal scroll on mobile */
       transition: opacity 0.9s var(--ease-gentle), transform 0.9s var(--ease-gentle);
     }
 
     .reveal-left.visible {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateY(0);
     }
 
     .reveal-right {
       opacity: 0;
-      transform: translateX(60px);
+      transform: translateY(40px); /* was translateX(60px) — caused horizontal scroll on mobile */
       transition: opacity 0.9s var(--ease-gentle), transform 0.9s var(--ease-gentle);
     }
 
     .reveal-right.visible {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateY(0);
     }
 
     /* Stagger delays */
@@ -416,6 +419,7 @@
     .story {
       padding: 80px 24px;
       background: var(--cream);
+      overflow: hidden;
     }
 
     .story__inner {
@@ -577,7 +581,9 @@
     .carousel-stage {
       position: relative;
       width: 100%;
+      max-width: 100%;
       overflow: hidden;
+      touch-action: pan-y; /* let vertical scroll pass through, block horizontal steal */
       mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
       -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
     }
@@ -587,6 +593,7 @@
       display: flex;
       gap: 20px;
       will-change: transform;
+      touch-action: none; /* track itself handles no touch — stage does */
     }
 
     /* ── Individual slide ── */
@@ -1064,6 +1071,7 @@
        FLOATING PETALS LAYER
        ═══════════════════════════════════════════════ -->
   <div class="petal-layer" id="petalLayer" aria-hidden="true"></div>
+  <div style="overflow:hidden;position:relative;width:100%">
 
   <!-- ═══════════════════════════════════════════════
   ██  HERO SECTION
@@ -1435,7 +1443,7 @@
   UPDATE: footer text / year
   ═══════════════════════════════════════════════════ -->
   <footer>
-    <p>Made with love · Mother's Day 2026</p>
+    <p>Made with love · Mother's Day 2025</p>
   </footer>
 
   <!-- ═══════════════════════════════════════════════
@@ -1716,6 +1724,7 @@
       startAuto();
     })();
   </script>
+  </div><!-- end page wrapper -->
 
 </body>
 </html>
