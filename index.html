@@ -942,19 +942,29 @@
 
     .lightbox__close {
       position: absolute;
-      top: 24px;
-      right: 28px;
-      background: none;
-      border: none;
-      color: rgba(253,246,240,0.6);
-      font-size: 2rem;
+      top: 16px;
+      right: 16px;
+      z-index: 10; /* sit above the image */
+      background: rgba(253,246,240,0.15);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(253,246,240,0.25);
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(253,246,240,0.9);
+      font-size: 1.4rem;
       cursor: pointer;
-      transition: color 0.3s, transform 0.3s;
-      line-height: 1;
+      touch-action: manipulation; /* prevent double-tap delay on iOS */
+      transition: background 0.3s, transform 0.3s;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .lightbox__close:hover {
-      color: var(--white);
+    .lightbox__close:hover,
+    .lightbox__close:active {
+      background: rgba(253,246,240,0.3);
       transform: rotate(90deg);
     }
 
@@ -1282,7 +1292,7 @@
 
           <div class="memory-card reveal delay-2">
             <!-- UPDATE: icon, number, and label -->
-            <span class="memory-card__icon">👧🏽</span>
+            <span class="memory-card__icon">👧🏽👧🏽👩🏽‍🦱🧑🏼‍🦱</span>
             <div class="memory-card__number">4</div>
             <div class="memory-card__label">Precious Grandchildern</div>
           </div>
@@ -1426,7 +1436,7 @@
         <p class="closing__body reveal delay-2">
           No gift, page, or collection of words will ever come close to expressing
           what you mean to me. But on this day, and every day, I want you to know:
-          you are seen, adored, and endlessly loved. Thank you, Mum.
+          you are seen, adored, and endlessly loved. Thank you, Mom.
         </p>
 
         <!-- UPDATE: signature name -->
@@ -1583,15 +1593,32 @@
       lightboxImg.alt    = caption;
       lightboxCaption.textContent = caption;
       lightbox.classList.add('active');
-      document.body.style.overflow = 'hidden';
+      /* iOS Safari ignores overflow:hidden on body — fix with position:fixed */
+      const scrollY = window.scrollY;
+      document.body.style.position   = 'fixed';
+      document.body.style.top        = `-${scrollY}px`;
+      document.body.style.width      = '100%';
+      document.body.dataset.scrollY  = scrollY;
+      /* Pause the conveyor belt */
+      if (typeof rafId !== 'undefined') cancelAnimationFrame(rafId);
     }
 
     function closeLightbox() {
       lightbox.classList.remove('active');
-      document.body.style.overflow = '';
+      /* Restore scroll position */
+      const scrollY = parseInt(document.body.dataset.scrollY || '0');
+      document.body.style.position = '';
+      document.body.style.top      = '';
+      document.body.style.width    = '';
+      window.scrollTo(0, scrollY);
+      /* Resume conveyor belt */
+      if (typeof tick === 'function') rafId = requestAnimationFrame(tick);
     }
 
-    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeLightbox();
+    });
     lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
@@ -1669,19 +1696,53 @@
 
   <script>
     /* ════════════════════════════════════════════════
-       MUSIC — silent auto-play, no visible UI
+       MUSIC — immediate autoplay via AudioContext unlock
        ════════════════════════════════════════════════ */
     const bgMusic = document.getElementById('bgMusic');
     bgMusic.volume = 0.55;
-    window.addEventListener('load', () => {
-      bgMusic.play().catch(() => {
-        /* Autoplay blocked — resume on first interaction */
-        const resume = () => bgMusic.play();
-        document.addEventListener('click',    resume, { once: true });
-        document.addEventListener('touchend', resume, { once: true });
-        document.addEventListener('keydown',  resume, { once: true });
-      });
-    });
+
+    function playMusic() {
+      bgMusic.play().catch(() => {});
+    }
+
+    /* Strategy 1: unlock via a silent Web Audio context, then play.
+       This works on most browsers including iOS Safari when the page
+       is opened directly (e.g. from a link). */
+    function unlockAndPlay() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const buf = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start(0);
+        ctx.resume().then(() => {
+          playMusic();
+        });
+      } catch (e) {
+        playMusic();
+      }
+    }
+
+    /* Strategy 2: fallback — play on very first touch/click if still blocked */
+    function onFirstInteraction() {
+      playMusic();
+      document.removeEventListener('touchstart', onFirstInteraction);
+      document.removeEventListener('click',      onFirstInteraction);
+      document.removeEventListener('keydown',    onFirstInteraction);
+    }
+
+    /* Run unlock as early as possible */
+    if (document.readyState === 'complete') {
+      unlockAndPlay();
+    } else {
+      window.addEventListener('load', unlockAndPlay);
+    }
+
+    /* Belt-and-braces: also hook first interaction in case unlock fails */
+    document.addEventListener('touchstart', onFirstInteraction, { once: true });
+    document.addEventListener('click',      onFirstInteraction, { once: true });
+    document.addEventListener('keydown',    onFirstInteraction, { once: true });
 
     /* ════════════════════════════════════════════════
        SECTION 4 MINI SLIDESHOW
