@@ -604,13 +604,7 @@
       border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 16px 50px rgba(58,39,48,0.15);
-      transition: transform 0.45s var(--ease-bloom), box-shadow 0.45s var(--ease-gentle);
-    }
-
-    .carousel-slide:hover {
-      transform: scale(1.05) translateY(-8px);
-      box-shadow: 0 30px 70px rgba(58,39,48,0.26);
-      z-index: 2;
+      pointer-events: none; /* completely inert — no hover, no click */
     }
 
     .carousel-slide__img {
@@ -622,49 +616,6 @@
       background-size: 200% 200%;
       animation: shimmer 2.5s ease-in-out infinite;
       pointer-events: none;
-    }
-
-    /* gradient overlay */
-    .carousel-slide::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(58,39,48,0.65) 0%, rgba(58,39,48,0.08) 50%, transparent 72%);
-      pointer-events: none;
-    }
-
-    /* caption */
-    .carousel-slide__caption {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      z-index: 2;
-      padding: 30px 16px 16px;
-      pointer-events: none;
-    }
-
-    .carousel-slide__caption-number {
-      font-family: var(--font-body);
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(253,246,240,0.4);
-      margin-bottom: 3px;
-    }
-
-    .carousel-slide__caption-text {
-      font-family: var(--font-display);
-      font-size: 1rem;
-      font-weight: 300;
-      font-style: italic;
-      color: var(--white);
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 0.35s, transform 0.35s;
-    }
-
-    .carousel-slide:hover .carousel-slide__caption-text {
-      opacity: 1;
-      transform: translateY(0);
     }
 
     /* ── Pause / speed controls ── */
@@ -1269,9 +1220,9 @@
           <h2 class="section-title" id="story4-title">A weekend at Boringdon 🧖🏻‍♀️</h2>
           <!-- UPDATE: section 4 body text -->
           <p class="section-body">
-            How could I create a list of our most cherished memories and leave out Boringdon? Yet again, another memory that I will stay with me forever.
+            How could I create a list of our most cherished memories and leave out Boringdon? Yet again, another memory that will stay with me forever.
             Two of the least posh people in Plymouth in the most boujee hotel, they could probably smell the poverty on us, but we didn't give a fuck! 🤣 
-            Amazing, spa treatments and to top if off, to cure our hunger.. a private invite to a strangers outdoor birthday buffet at a random pub. Priceless.
+            Amazing spa treatments and to top if off, to cure our hunger.. a private invite to a strangers outdoor birthday buffet at a random pub. Priceless.
           </p>
           <!-- UPDATE: section 4 pull quote -->
           <blockquote class="story__quote">
@@ -1376,7 +1327,7 @@
   UPDATE: footer text / year
   ═══════════════════════════════════════════════════ -->
   <footer>
-    <p>Made with love · Mother's Day 2025</p>
+    <p>Made with love · Mother's Day 2026</p>
   </footer>
 
   <script>
@@ -1428,12 +1379,7 @@
       slide.setAttribute('aria-label', `${photo.caption}`);
       slide.innerHTML = `
         <img class="carousel-slide__img" src="${photo.src}" alt="${photo.caption}" loading="lazy" />
-        <div class="carousel-slide__caption">
-          <div class="carousel-slide__caption-number">${String(i + 1).padStart(2,'0')} / ${String(TOTAL).padStart(2,'0')}</div>
-          <div class="carousel-slide__caption-text">${photo.caption}</div>
-        </div>
       `;
-      slide.addEventListener('click', () => {}); // no action on click
       return slide;
     }
 
