@@ -604,7 +604,6 @@
       border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 16px 50px rgba(58,39,48,0.15);
-      cursor: pointer;
       transition: transform 0.45s var(--ease-bloom), box-shadow 0.45s var(--ease-gentle);
     }
 
@@ -890,82 +889,6 @@
       font-weight: 300;
       letter-spacing: 0.15em;
       color: rgba(253,246,240,0.35);
-    }
-
-    /* ═══════════════════════════════════════════════
-       LIGHTBOX
-       ═══════════════════════════════════════════════ */
-    .lightbox {
-      position: fixed;
-      inset: 0;
-      background: rgba(22,12,17,0.95);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s;
-      backdrop-filter: blur(6px);
-    }
-
-    .lightbox.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .lightbox__img {
-      max-width: 85vw;
-      max-height: 85vh;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.5);
-      transform: scale(0.95);
-      transition: transform 0.4s var(--ease-bloom);
-    }
-
-    .lightbox.active .lightbox__img {
-      transform: scale(1);
-    }
-
-    .lightbox__caption {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: var(--font-body);
-      font-size: 0.78rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(253,246,240,0.55);
-    }
-
-    .lightbox__close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      z-index: 10; /* sit above the image */
-      background: rgba(253,246,240,0.15);
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(253,246,240,0.25);
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(253,246,240,0.9);
-      font-size: 1.4rem;
-      cursor: pointer;
-      touch-action: manipulation; /* prevent double-tap delay on iOS */
-      transition: background 0.3s, transform 0.3s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .lightbox__close:hover,
-    .lightbox__close:active {
-      background: rgba(253,246,240,0.3);
-      transform: rotate(90deg);
     }
 
     /* ═══════════════════════════════════════════════
@@ -1456,15 +1379,6 @@
     <p>Made with love · Mother's Day 2025</p>
   </footer>
 
-  <!-- ═══════════════════════════════════════════════
-  LIGHTBOX
-  ═══════════════════════════════════════════════════ -->
-  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo lightbox">
-    <button class="lightbox__close" id="lightboxClose" aria-label="Close">✕</button>
-    <img class="lightbox__img" id="lightboxImg" src="" alt="" />
-    <p class="lightbox__caption" id="lightboxCaption"></p>
-  </div>
-
   <script>
     /* ═══════════════════════════════════════════════════
        PHOTO DATA
@@ -1519,7 +1433,7 @@
           <div class="carousel-slide__caption-text">${photo.caption}</div>
         </div>
       `;
-      slide.addEventListener('click', () => openLightbox(photo.src, photo.caption));
+      slide.addEventListener('click', () => {}); // no action on click
       return slide;
     }
 
@@ -1579,48 +1493,6 @@
         dot.blur();
       });
     });
-
-    /* ════════════════════════════════════════════════
-       LIGHTBOX
-       ════════════════════════════════════════════════ */
-    const lightbox        = document.getElementById('lightbox');
-    const lightboxImg     = document.getElementById('lightboxImg');
-    const lightboxCaption = document.getElementById('lightboxCaption');
-    const lightboxClose   = document.getElementById('lightboxClose');
-
-    function openLightbox(src, caption) {
-      lightboxImg.src    = src;
-      lightboxImg.alt    = caption;
-      lightboxCaption.textContent = caption;
-      lightbox.classList.add('active');
-      /* iOS Safari ignores overflow:hidden on body — fix with position:fixed */
-      const scrollY = window.scrollY;
-      document.body.style.position   = 'fixed';
-      document.body.style.top        = `-${scrollY}px`;
-      document.body.style.width      = '100%';
-      document.body.dataset.scrollY  = scrollY;
-      /* Pause the conveyor belt */
-      if (typeof rafId !== 'undefined') cancelAnimationFrame(rafId);
-    }
-
-    function closeLightbox() {
-      lightbox.classList.remove('active');
-      /* Restore scroll position */
-      const scrollY = parseInt(document.body.dataset.scrollY || '0');
-      document.body.style.position = '';
-      document.body.style.top      = '';
-      document.body.style.width    = '';
-      window.scrollTo(0, scrollY);
-      /* Resume conveyor belt */
-      if (typeof tick === 'function') rafId = requestAnimationFrame(tick);
-    }
-
-    lightboxClose.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeLightbox();
-    });
-    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
     /* ════════════════════════════════════════════════
        SCROLL-REVEAL  (Intersection Observer)
@@ -1692,57 +1564,23 @@
 
   </script>
   <!-- UPDATE: replace debs.mp3 if using a different audio file -->
-  <audio id="bgMusic" src="debs.mp3" loop preload="auto"></audio>
+  <audio id="bgMusic" src="debs1.mp3" loop preload="auto"></audio>
 
   <script>
     /* ════════════════════════════════════════════════
-       MUSIC — immediate autoplay via AudioContext unlock
+       MUSIC — silent auto-play, no visible UI
        ════════════════════════════════════════════════ */
     const bgMusic = document.getElementById('bgMusic');
     bgMusic.volume = 0.55;
-
-    function playMusic() {
-      bgMusic.play().catch(() => {});
-    }
-
-    /* Strategy 1: unlock via a silent Web Audio context, then play.
-       This works on most browsers including iOS Safari when the page
-       is opened directly (e.g. from a link). */
-    function unlockAndPlay() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const buf = ctx.createBuffer(1, 1, 22050);
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
-        src.connect(ctx.destination);
-        src.start(0);
-        ctx.resume().then(() => {
-          playMusic();
-        });
-      } catch (e) {
-        playMusic();
-      }
-    }
-
-    /* Strategy 2: fallback — play on very first touch/click if still blocked */
-    function onFirstInteraction() {
-      playMusic();
-      document.removeEventListener('touchstart', onFirstInteraction);
-      document.removeEventListener('click',      onFirstInteraction);
-      document.removeEventListener('keydown',    onFirstInteraction);
-    }
-
-    /* Run unlock as early as possible */
-    if (document.readyState === 'complete') {
-      unlockAndPlay();
-    } else {
-      window.addEventListener('load', unlockAndPlay);
-    }
-
-    /* Belt-and-braces: also hook first interaction in case unlock fails */
-    document.addEventListener('touchstart', onFirstInteraction, { once: true });
-    document.addEventListener('click',      onFirstInteraction, { once: true });
-    document.addEventListener('keydown',    onFirstInteraction, { once: true });
+    window.addEventListener('load', () => {
+      bgMusic.play().catch(() => {
+        /* Autoplay blocked — resume on first interaction */
+        const resume = () => bgMusic.play();
+        document.addEventListener('click',    resume, { once: true });
+        document.addEventListener('touchend', resume, { once: true });
+        document.addEventListener('keydown',  resume, { once: true });
+      });
+    });
 
     /* ════════════════════════════════════════════════
        SECTION 4 MINI SLIDESHOW
